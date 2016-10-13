@@ -1,0 +1,12 @@
+{
+	"name" : "default",
+	"description" : "Default instance",
+	"devices" : [
+		{
+			"type" : "serial",
+			"name" : "serial1",
+			"path" : "/tmp/s01",
+			"port" : "22343"
+		}	
+	]
+}

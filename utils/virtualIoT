@@ -1,0 +1,77 @@
+#!/bin/sh
+
+
+rand_num=$(python -c "import random; print random.randint(1,10000)")
+
+image_name="iot/"$rand_num
+config_file="config.json"
+container_name=$rand_num
+cur_dir=$(pwd)
+network_name="test"
+quantity=1
+
+while getopts ":c:i:n:s:q:" opt; do
+	case $opt in
+		i)
+			image_name=$OPTARG
+			;;
+		n)
+			container_name=$OPTARG
+			;;
+		c)
+			config_file=$OPTARG
+			;;
+		s)
+			network_name=$OPTARG
+			;;
+		q)
+			quantity=$OPTARG
+			;;
+		\?)
+			echo "Invalid option: -$OPTARG" >&2
+			exit 1
+			;;
+	esac
+done
+
+config_file=$cur_dir/$config_file
+
+build() {
+	sudo docker build -t $image_name .
+}
+
+batch() {
+	for i in `seq 1 $quantity`; do
+		sudo docker run --net $network_name --name $container_name\_$i -t -d $image_name
+	done
+}
+
+start() {
+	if [ -f $config_file ]; then
+		python $VIRTUAL_IOT_HOME/prepareIotConfig.py -c $config_file -n $container_name -i $image_name
+	else
+		echo "Config file not found, use -c {filename} option."
+	fi
+
+	if [ -f "RUN_SCRIPT.tmp" ]; then
+		sh RUN_SCRIPT.tmp
+
+	else
+		echo "Error occurred, stopping"
+		exit 1
+	fi
+}
+
+shift $((OPTIND-1))
+case "$1" in
+	start)
+		start
+		;;
+	batch)
+		batch
+		;;
+	*)
+		echo "Usage: $0 {start|batch|build}"
+		exit 1
+		;;
+esac

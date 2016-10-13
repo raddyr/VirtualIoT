@@ -1,0 +1,24 @@
+{
+	"name" : "default",
+	"description" : "Default instance",
+	"devices" : [
+		{
+			"type" : "GPIO",
+			"name" : "gpio0",
+			"path" : "/dev/gpio0",
+			"port" : "22343"
+		},
+	{
+			"type" : "GPIO",
+			"name" : "gpio1",
+			"path" : "/dev/gpio1",
+			"port" : "22344"
+		},
+	{
+			"type" : "GPIO",
+			"name" : "gpio2",
+			"path" : "/dev/gpio2",
+			"port" : "22345"
+		}
+	]
+}

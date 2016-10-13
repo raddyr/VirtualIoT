@@ -1,0 +1,87 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+</head>
+
+<body>
+  <script src="https://cdn.socket.io/socket.io-1.3.7.js"></script>
+  <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+  <script>
+            var socket = io();
+	    var devType = '';
+            
+            socket.on('data', function(data) {
+                addMessage(data);
+            });
+            socket.on('error', console.error.bind(console));
+            socket.on('info', function(data) {
+                bindInfoResponse(data);
+            });
+
+            function addMessage(message) {
+		if(!$.isArray(message)){
+			message = [message];		
+		}
+		if(devType === 'GPIO') {
+			$("#deviceState").text(message);
+		} else {
+		        var text = document.createTextNode(message.toString() + "  :(" + String.fromCharCode.apply(this,message) + ")"),
+		            el = document.createElement('li'),
+		            messages = document.getElementById('messages');
+
+		        el.appendChild(text);
+		        messages.appendChild(el);
+		}
+            }
+
+	    function write(data){
+		socket.emit('write', data);
+	    }
+
+	    function sendInfoRequest(data){
+		socket.emit('getInfo');
+	    }
+
+	    function read(){
+	    	socket.emit('read');
+	    }
+
+	    function bindInfoResponse(data){
+		$("#deviceName").text(data.deviceName);
+		$("#deviceType").text(data.type);
+		devType = data.type;
+		if(devType === 'GPIO'){
+			$('#deviceStateHElem').show();
+			$("#deviceState").text('N/A');
+		} else {
+			$('#deviceBufHElem').show();
+			$("#deviceBuf").text(data.bufferSize);
+		}
+	    }
+
+	    $(function(){
+		$("input#sender").keyup(function (e) {
+		    if (e.keyCode == 13) {
+			write($(this).val());
+			$(this).val('');
+		    }
+		});
+	    });
+
+	    $(function(){
+		sendInfoRequest();
+	    });
+        </script>
+	<h3>Device name: <strong id="deviceName"></strong></h3>
+	<h4>Device type: <strong id="deviceType"></strong></h4>
+	<h4 id="deviceBufHElem" style="display: none;">Device buffer size: <strong id="deviceBuf"></strong></h4>
+	<h4 id="deviceStateHElem" style="display: none;">Device state: <strong id="deviceState"></strong></h4>
+	<a href="#" onClick="read()">read</a>
+	<input id="sender" type="text" size="50"><br />
+        <ul id='messages'></ul>
+</body>
+</html>
